@@ -1,0 +1,181 @@
+﻿using Microsoft.EntityFrameworkCore;
+using TaskManagerAPIPractice.DataAccess.abstruct;
+using TaskManagerAPIPractice.DataAccess.ModulEntity;
+
+namespace TaskManagerAPIPractice.DataAccess.Repositories
+{
+    public class TasksRepository : ITasksRepository
+    {
+        private readonly TaskAPIDbContext _context;
+
+        public TasksRepository(TaskAPIDbContext context)
+        {
+            _context = context;
+        }
+
+        // Отримати всі завдання
+        public async Task<List<TaskEntity>> GetAll()
+        {
+            return await _context.Tasks
+                .Include(t => t.TaskCreatedBy)
+                .Include(t => t.TaskAssignedTo)
+                .Include(t => t.Category)
+                .Include(t => t.Project)
+                .Include(t => t.Tags)
+                .Include(t => t.Notifications)
+                .ToListAsync();
+        }
+
+        // Отримати завдання за ID
+        public async Task<TaskEntity?> GetById(Guid id)
+        {
+            return await _context.Tasks
+                .Include(t => t.TaskCreatedBy)
+                .Include(t => t.TaskAssignedTo)
+                .Include(t => t.Category)
+                .Include(t => t.Project)
+                .Include(t => t.Tags)
+                .Include(t => t.Notifications)
+                .FirstOrDefaultAsync(t => t.Id == id) ?? throw new Exception("Task not found"); ;
+        }
+
+        // Додати нове завдання
+        public async Task Add(TaskEntity task)
+        {
+            _context.Tasks.Add(task);
+            await _context.SaveChangesAsync();
+        }
+
+        // Оновити завдання
+        public async Task Update(TaskEntity task)
+        {
+            var existingTask = await _context.Tasks
+                .Include(t => t.Tags)
+                .Include(t => t.Notifications)
+                .FirstOrDefaultAsync(t => t.Id == task.Id);
+
+            if (existingTask == null)
+            {
+                throw new Exception("Task not found");
+            }
+
+            // Оновлення основних полів
+            existingTask.Title = task.Title;
+            existingTask.Description = task.Description;
+            existingTask.Status = task.Status;
+            existingTask.Priority = task.Priority;
+            existingTask.DeadLine = task.DeadLine;
+            existingTask.CreatedAt = task.CreatedAt;
+
+            // Оновлення зовнішніх ключів
+            existingTask.TaskCreatedById = task.TaskCreatedById;
+            existingTask.TaskAssignedToId = task.TaskAssignedToId;
+            existingTask.CategoryId = task.CategoryId;
+            existingTask.ProjectId = task.ProjectId;
+            existingTask.TeamId = task.TeamId;
+
+            // Оновлення навігаційних властивостей
+            existingTask.Tags = task.Tags;
+            existingTask.Notifications = task.Notifications;
+
+            _context.Tasks.Update(existingTask);
+            await _context.SaveChangesAsync();
+        }
+
+        // Видалити завдання
+        public async Task Delete(Guid id)
+        {
+            var task = await _context.Tasks.FindAsync(id);
+            if (task != null)
+            {
+                _context.Tasks.Remove(task);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        // Отримати відфільтровані завдання
+        public async Task<List<TaskEntity>> GetFilteredTasks(string? search, int? status, int? priority, DateTime? deadline, string? project, string? tag)
+        {
+            var query = _context.Tasks
+                .Include(t => t.TaskCreatedBy)
+                .Include(t => t.TaskAssignedTo)
+                .Include(t => t.Category)
+                .Include(t => t.Project)
+                .Include(t => t.Tags)
+                .Include(t => t.Notifications)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(t => EF.Functions.Like(t.Title, $"%{search}%") || EF.Functions.Like(t.Description, $"%{search}%"));
+            }
+
+            if (status.HasValue)
+            {
+                query = query.Where(t => (int)t.Status == status.Value);
+            }
+
+            if (priority.HasValue)
+            {
+                query = query.Where(t => (int)t.Priority == priority.Value);
+            }
+
+            if (deadline.HasValue)
+            {
+                query = query.Where(t => t.DeadLine.HasValue && t.DeadLine.Value.Date == deadline.Value.Date);
+
+                //query = query.Where(t => t.DeadLine.Date == deadline.Value.Date);
+                //query = query.Where(t => t.DeadLine == deadline.Value);
+            }
+
+            if (!string.IsNullOrEmpty(project))
+            {
+                query = query.Where(t => t.Project != null && EF.Functions.Like(t.Project.Title, $"%{project}%"));
+            }
+
+            if (!string.IsNullOrEmpty(tag))
+            {
+                query = query.Where(t => t.Tags != null && t.Tags.Any(tagEntity => EF.Functions.Like(tagEntity.Name, $"%{tag}%")));
+            }
+
+            return await query.ToListAsync();
+        }
+
+        //public async Task<List<TaskEntity>> GetFilteredTasks(string? search, int? status, int? priority, DateTime? deadline, string? project, string? tag)
+        //{
+        //    var query = _context.Tasks.AsQueryable();
+
+        //    if (!string.IsNullOrEmpty(search))
+        //    {
+        //        query = query.Where(t => t.Title.Contains(search) || t.Description.Contains(search));
+        //    }
+
+        //    if (status.HasValue)
+        //    {
+        //        query = query.Where(t => (int)t.Status == status.Value);
+        //    }
+
+        //    if (priority.HasValue)
+        //    {
+        //        query = query.Where(t => (int)t.Priority == priority.Value);
+        //    }
+
+        //    if (deadline.HasValue)
+        //    {
+        //        query = query.Where(t => t.DeadLine == deadline.Value);
+        //    }
+
+        //    if (!string.IsNullOrEmpty(project))
+        //    {
+        //        query = query.Where(t => t.Project.Title.Contains(project));
+        //    }
+
+        //    if (!string.IsNullOrEmpty(tag))
+        //    {
+        //        query = query.Where(t => t.Tags.Any(tagEntity => tagEntity.Name.Contains(tag)));
+        //    }
+
+        //    return await query.ToListAsync();
+        //}
+    }
+}

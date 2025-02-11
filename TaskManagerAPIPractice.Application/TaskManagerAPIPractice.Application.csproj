@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TaskManagerAPIPractice.AllAbstruct\TaskManagerAPIPractice.AllAbstruct.csproj" />
+    <ProjectReference Include="..\TaskManagerAPIPractice.Core\TaskManagerAPIPractice.Core.csproj" />
+    <ProjectReference Include="..\TaskManagerAPIPractice.DataAccess\TaskManagerAPIPractice.DataAccess.csproj" />
+  </ItemGroup>
+
+</Project>
