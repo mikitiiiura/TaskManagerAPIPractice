@@ -26,7 +26,7 @@ namespace TaskManagerAPIPractice.Persistence
             var token = new JwtSecurityToken(
                 claims: claims,
                 signingCredentials: signingCredential,
-                expires: DateTime.UtcNow.AddHours(_options.ExpitersHours * 4)
+                expires: DateTime.UtcNow.AddHours(4)  //_options.ExpitersHours * 4 некоректно працює
                 );
 
             var tokenValue = new JwtSecurityTokenHandler().WriteToken(token);

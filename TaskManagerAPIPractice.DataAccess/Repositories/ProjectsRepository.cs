@@ -105,7 +105,7 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
 
             if (!string.IsNullOrEmpty(team))
             {
-                query = query.Where(p => p.Team != null && p.Team.Name.Contains(team));
+                query = query.Where(p => p.Team != null && p.Team.Name == team);
             }
 
             return await query.ToListAsync();

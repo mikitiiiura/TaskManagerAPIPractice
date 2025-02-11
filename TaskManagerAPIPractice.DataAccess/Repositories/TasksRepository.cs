@@ -140,42 +140,5 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
 
             return await query.ToListAsync();
         }
-
-        //public async Task<List<TaskEntity>> GetFilteredTasks(string? search, int? status, int? priority, DateTime? deadline, string? project, string? tag)
-        //{
-        //    var query = _context.Tasks.AsQueryable();
-
-        //    if (!string.IsNullOrEmpty(search))
-        //    {
-        //        query = query.Where(t => t.Title.Contains(search) || t.Description.Contains(search));
-        //    }
-
-        //    if (status.HasValue)
-        //    {
-        //        query = query.Where(t => (int)t.Status == status.Value);
-        //    }
-
-        //    if (priority.HasValue)
-        //    {
-        //        query = query.Where(t => (int)t.Priority == priority.Value);
-        //    }
-
-        //    if (deadline.HasValue)
-        //    {
-        //        query = query.Where(t => t.DeadLine == deadline.Value);
-        //    }
-
-        //    if (!string.IsNullOrEmpty(project))
-        //    {
-        //        query = query.Where(t => t.Project.Title.Contains(project));
-        //    }
-
-        //    if (!string.IsNullOrEmpty(tag))
-        //    {
-        //        query = query.Where(t => t.Tags.Any(tagEntity => tagEntity.Name.Contains(tag)));
-        //    }
-
-        //    return await query.ToListAsync();
-        //}
     }
 }
