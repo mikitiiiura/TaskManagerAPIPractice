@@ -4,6 +4,7 @@ using TaskManagerAPIPractice.DataAccess.ModulEntity;
 using TaskManagerAPIPractice.Core.Model;
 using TaskManagerAPIPractice.Contracts;
 using Microsoft.AspNetCore.Authorization;
+using System.Linq;
 
 namespace TaskManagerAPIPractice.API.Controllers
 {
@@ -75,6 +76,15 @@ namespace TaskManagerAPIPractice.API.Controllers
         {
             await _projectsServices.Delete(id);
             return NoContent();
+        }
+
+        //Отримати відфільтровані проекти
+        [HttpGet("filtered")]
+        public async Task<ActionResult<List<ProjectResponse>>> GetFiltered([FromQuery] string? search, [FromQuery] int? status, [FromQuery] string? team)
+        {
+            var projects = await _projectsServices.GetFilteredProject(search, status, team);
+            var response = projects.Select(project => new ProjectResponse(project)).ToList();
+            return Ok(response);
         }
     }
 }
