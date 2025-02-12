@@ -5,6 +5,7 @@ using TaskManagerAPIPractice.Core.Model;
 using TaskManagerAPIPractice.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using System.Linq;
+using System.Security.Claims;
 
 namespace TaskManagerAPIPractice.API.Controllers
 {
@@ -26,6 +27,20 @@ namespace TaskManagerAPIPractice.API.Controllers
             var projects = await _projectsServices.GetAll();
             return Ok(projects.Select(p => new ProjectResponse(p)));
         }
+
+        [HttpGet("idUser")]
+        public async Task<ActionResult<List<ProjectResponse>>> GetByIdAutomaticUser()
+        {
+            var userId = User.FindFirstValue("userId");
+            if (userId == null) return Unauthorized();
+
+            var project = await _projectsServices.GetAllByUser(Guid.Parse(userId));
+            if (project == null) return NotFound();
+            //return Ok(new ProjectResponse(project));
+            return Ok(project.Select(p => new ProjectResponse(p)));
+        }
+
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ProjectResponse>> GetById(Guid id)

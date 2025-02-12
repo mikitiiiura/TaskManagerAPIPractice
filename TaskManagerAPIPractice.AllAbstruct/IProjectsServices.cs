@@ -11,5 +11,6 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
         Task<List<ProjectEntity>> GetFilteredProject(string? search, int? status, string? team);
         Task Update(ProjectEntity project);
         Task UpdateStatus(Guid id, TaskManagerAPIPractice.Core.Model.ProjectStatus status);
+        Task<List<ProjectEntity>> GetAllByUser(Guid userId);
     }
 }

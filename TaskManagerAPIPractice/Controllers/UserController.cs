@@ -33,26 +33,6 @@ namespace TaskManagerAPIPractice.Controllers
             // }
         }
 
-        //[HttpPost("login")]
-        //public async Task<IActionResult> Login([FromBody] LoginUserRequest userRequest)
-        //{
-        //    var token = await _userService.Login(userRequest.Email, userRequest.Password);
-
-        //    if (token == null)
-        //    {
-        //        return Unauthorized(); // Якщо логін не вдався
-        //    }
-
-        //    // Додаємо токен у кукі
-        //    Response.Cookies.Append("tasty-cookies", token, new CookieOptions
-        //    {
-        //        HttpOnly = true,  // Захист від XSS
-        //        Secure = true,    // Кукі працюватиме лише по HTTPS (рекомендується)
-        //        SameSite = SameSiteMode.Strict // Захист від CSRF
-        //    });
-
-        //    return Ok(new { Token = token });
-        //}
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginUserRequest userRequest)
         {

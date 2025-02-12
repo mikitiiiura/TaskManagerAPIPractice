@@ -14,7 +14,7 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
         {
             _projectsRepository = projectsRepository;
         }
-
+        
         // Отримати всі проекти
         public async Task<List<ProjectEntity>> GetAll()
         {
@@ -54,6 +54,11 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
         public async Task UpdateStatus(Guid id, TaskManagerAPIPractice.Core.Model.ProjectStatus status)
         {
             await _projectsRepository.UpdateStatus(id, status);
+        }
+
+        public async Task<List<ProjectEntity>> GetAllByUser(Guid userId)
+        {
+            return await _projectsRepository.GetAllByUser(userId);
         }
     }
 }

@@ -125,5 +125,23 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
 
             await _context.SaveChangesAsync();
         }
+
+        public async Task<List<ProjectEntity>> GetAllByUser(Guid userId)
+        {
+            var projectEntities = await _context.Projects
+                .Where(p => p.ProjectCreatedById == userId)
+                .Include(p => p.Team)
+                .Include(p => p.ProjectCreatedBy)
+                .Include(p => p.Tasks) //небуло
+                .AsNoTracking()
+                .ToListAsync();
+
+            return projectEntities.ToList();
+
+            //return await _context.Projects
+            //    .Where(p => p.ProjectCreatedById == userId)
+            //    .ToListAsync();
+        }
+
     }
 }
