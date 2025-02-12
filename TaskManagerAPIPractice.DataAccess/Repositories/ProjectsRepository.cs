@@ -111,5 +111,19 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
             return await query.ToListAsync();
             //return projectEntities.Select(p => MapToProject(p)).ToList();
         }
+
+        public async Task UpdateStatus(Guid id, TaskManagerAPIPractice.Core.Model.ProjectStatus status)
+        {
+            var existingProject = await _context.Projects.FirstOrDefaultAsync(t => t.Id == id);
+            if (existingProject == null)
+            {
+                throw new Exception("Project not found");
+            }
+
+            existingProject.Status = status;
+            _context.Entry(existingProject).Property(x => x.Status).IsModified = true;
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

@@ -50,5 +50,10 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
         {
             return await _projectsRepository.GetFiltered(search, status, team);
         }
+
+        public async Task UpdateStatus(Guid id, TaskManagerAPIPractice.Core.Model.ProjectStatus status)
+        {
+            await _projectsRepository.UpdateStatus(id, status);
+        }
     }
 }

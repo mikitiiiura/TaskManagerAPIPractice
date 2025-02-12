@@ -10,5 +10,6 @@ namespace TaskManagerAPIPractice.DataAccess.abstruction
         Task<ProjectEntity> GetById(Guid id);
         Task<List<ProjectEntity>> GetFiltered(string? search, int? status, string? team);
         Task Update(ProjectEntity project);
+        Task UpdateStatus(Guid id, TaskManagerAPIPractice.Core.Model.ProjectStatus status);
     }
 }
