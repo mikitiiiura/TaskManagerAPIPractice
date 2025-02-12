@@ -12,5 +12,6 @@ namespace TaskManagerAPIPractice.Application.Services
         Task Update(TaskEntity task);
         Task UpdateStatus(Guid id, TaskManagerAPIPractice.Core.Model.TaskStatus status);
         Task UpdatePriority(Guid id, TaskManagerAPIPractice.Core.Model.TaskPriority priority);
+        Task<List<TaskEntity>> GetAllByUser(Guid userId);
     }
 }

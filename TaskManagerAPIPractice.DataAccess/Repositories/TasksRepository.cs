@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 using TaskManagerAPIPractice.DataAccess.abstruct;
 using TaskManagerAPIPractice.DataAccess.ModulEntity;
 
@@ -202,6 +203,22 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
             _context.Entry(existingTask).Property(x => x.Priority).IsModified = true;
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<TaskEntity>> GetAllByUser(Guid userId)
+        {
+            var taskEntities = await _context.Tasks
+                .Where(t => t.TaskCreatedById == userId || t.TaskAssignedToId == userId)
+                .Include(t => t.TaskCreatedBy)
+                .Include(t => t.TaskAssignedTo)
+                .Include(t => t.Category)
+                .Include(t => t.Project)
+                .Include(t => t.Tags)
+                .Include(t => t.Notifications)
+                .AsNoTracking()
+                .ToListAsync();
+
+            return taskEntities;
         }
 
 

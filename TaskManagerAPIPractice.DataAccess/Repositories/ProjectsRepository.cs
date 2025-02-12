@@ -136,7 +136,7 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
                 .AsNoTracking()
                 .ToListAsync();
 
-            return projectEntities.ToList();
+            return projectEntities;
 
             //return await _context.Projects
             //    .Where(p => p.ProjectCreatedById == userId)

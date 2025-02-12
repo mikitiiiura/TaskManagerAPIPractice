@@ -58,5 +58,9 @@ namespace TaskManagerAPIPractice.Application.Services
             await _tasksRepository.UpdatePriority(id, priority);
         }
 
+        public async Task<List<TaskEntity>> GetAllByUser(Guid userId)
+        {
+            return await _tasksRepository.GetAllByUser(userId);
+        }
     }
 }

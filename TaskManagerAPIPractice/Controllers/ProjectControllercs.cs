@@ -29,7 +29,7 @@ namespace TaskManagerAPIPractice.API.Controllers
         }
 
         [HttpGet("idUser")]
-        public async Task<ActionResult<List<ProjectResponse>>> GetByIdAutomaticUser()
+        public async Task<ActionResult<List<ProjectResponse>>> GetByIdAutomaticProject()
         {
             var userId = User.FindFirstValue("userId");
             if (userId == null) return Unauthorized();

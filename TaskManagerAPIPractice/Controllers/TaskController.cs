@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using TaskManagerAPIPractice.Application.Services;
 using TaskManagerAPIPractice.Contracts;
 using TaskManagerAPIPractice.DataAccess.ModulEntity;
@@ -24,6 +25,18 @@ namespace TaskManagerAPIPractice.Controllers
             var tasks = await _tasksService.GetAll();
             var response = tasks.Select(task => new TaskResponse(task)).ToList();
             return Ok(response);
+        }
+
+        [HttpGet("idUser")]
+        public async Task<ActionResult<List<ProjectResponse>>> GetByIdAutomaticTask()
+        {
+            var userId = User.FindFirstValue("userId");
+            if (userId == null) return Unauthorized();
+
+            var task = await _tasksService.GetAllByUser(Guid.Parse(userId));
+            if (task == null) return NotFound();
+            //return Ok(new ProjectResponse(project));
+            return Ok(task.Select(t => new TaskResponse(t)));
         }
 
         [HttpGet("{id}")]
