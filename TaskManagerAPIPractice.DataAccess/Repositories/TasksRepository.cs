@@ -82,6 +82,41 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task UpdateStatusById(TaskEntity task)
+        {
+            var existingTask = await _context.Tasks
+                .Include(t => t.Tags)
+                .Include(t => t.Notifications)
+                .FirstOrDefaultAsync(t => t.Id == task.Id);
+
+            if (existingTask == null)
+            {
+                throw new Exception("Task not found");
+            }
+
+            // Оновлення основних полів
+            existingTask.Title = task.Title;
+            existingTask.Description = task.Description;
+            existingTask.Status = task.Status;
+            existingTask.Priority = task.Priority;
+            existingTask.DeadLine = task.DeadLine;
+            existingTask.CreatedAt = task.CreatedAt;
+
+            // Оновлення зовнішніх ключів
+            existingTask.TaskCreatedById = task.TaskCreatedById;
+            existingTask.TaskAssignedToId = task.TaskAssignedToId;
+            existingTask.CategoryId = task.CategoryId;
+            existingTask.ProjectId = task.ProjectId;
+            existingTask.TeamId = task.TeamId;
+
+            // Оновлення навігаційних властивостей
+            existingTask.Tags = task.Tags;
+            existingTask.Notifications = task.Notifications;
+
+            _context.Tasks.Update(existingTask);
+            await _context.SaveChangesAsync();
+        }
+
         // Видалити завдання
         public async Task Delete(Guid id)
         {
@@ -140,5 +175,36 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
 
             return await query.ToListAsync();
         }
+
+        public async Task UpdateStatus(Guid id, TaskManagerAPIPractice.Core.Model.TaskStatus status)
+        {
+            var existingTask = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == id);
+            if (existingTask == null)
+            {
+                throw new Exception("Task not found");
+            }
+
+            existingTask.Status = status;
+            _context.Entry(existingTask).Property(x => x.Status).IsModified = true;
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdatePriority(Guid id, TaskManagerAPIPractice.Core.Model.TaskPriority priority)
+        {
+            var existingTask = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == id);
+            if (existingTask == null)
+            {
+                throw new Exception("Task not found");
+            }
+
+            existingTask.Priority = priority;
+            _context.Entry(existingTask).Property(x => x.Priority).IsModified = true;
+
+            await _context.SaveChangesAsync();
+        }
+
+
+
     }
 }

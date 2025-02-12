@@ -3,7 +3,15 @@ using TaskManagerAPIPractice.DataAccess.ModulEntity;
 
 namespace TaskManagerAPIPractice.Contracts
 {
+    public record UpdateStatusRequest
+    (
+        int Status
+    );
 
+    public record UpdatePriorityRequest
+    (
+        int Priority
+    );
     public record UserRequest(
         string? FullName,
         string? Email,

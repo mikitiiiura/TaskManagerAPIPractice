@@ -47,5 +47,16 @@ namespace TaskManagerAPIPractice.Application.Services
         {
             return await _tasksRepository.GetFilteredTasks(search, status, priority, deadline, project, tag);
         }
+
+        public async Task UpdateStatus(Guid id, TaskManagerAPIPractice.Core.Model.TaskStatus status)
+        {
+            await _tasksRepository.UpdateStatus(id, status);
+        }
+
+        public async Task UpdatePriority(Guid id, TaskManagerAPIPractice.Core.Model.TaskPriority priority)
+        {
+            await _tasksRepository.UpdatePriority(id, priority);
+        }
+
     }
 }
