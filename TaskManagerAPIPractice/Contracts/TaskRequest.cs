@@ -202,6 +202,8 @@ namespace TaskManagerAPIPractice.Contracts
 
     public record ProjectRequest(string Title, string Description, DateTime? EndDate, int Status, Guid? TeamId, Guid? ProjectCreatedById);
 
+    public record CreateProjectRequest(string Title, string Description, DateTime? EndDate, int Status, Guid? TeamId);
+
     public record ProjectResponse(Guid Id, string Title, string Description, DateTime StartDate, DateTime? EndDate, ProjectStatus Status,
         TeamDetails? Team, UserDetails? ProjectCreatedBy, int TaskCount)
     {

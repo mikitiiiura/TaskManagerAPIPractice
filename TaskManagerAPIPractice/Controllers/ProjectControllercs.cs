@@ -50,6 +50,28 @@ namespace TaskManagerAPIPractice.API.Controllers
             return Ok(new ProjectResponse(project));
         }
 
+        [HttpPost("Automatically")]
+        public async Task<IActionResult> CreateAutomaticallyUser([FromBody] CreateProjectRequest request)
+        {
+            var userId = User.FindFirstValue("userId");
+            if (userId == null) return Unauthorized();
+
+            var project = new ProjectEntity
+            {
+                Id = Guid.NewGuid(),
+                Title = request.Title,
+                Description = request.Description,
+                StartDate = DateTime.UtcNow,
+                EndDate = request.EndDate,
+                Status = (ProjectStatus)request.Status,
+                TeamId = request.TeamId,
+                ProjectCreatedById = Guid.Parse(userId) //request.ProjectCreatedById
+            };
+
+            await _projectsServices.Add(project);
+            return CreatedAtAction(nameof(GetById), new { id = project.Id }, new ProjectResponse(project));
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ProjectRequest request)
         {
@@ -68,6 +90,8 @@ namespace TaskManagerAPIPractice.API.Controllers
             await _projectsServices.Add(project);
             return CreatedAtAction(nameof(GetById), new { id = project.Id }, new ProjectResponse(project));
         }
+
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] ProjectRequest request)
