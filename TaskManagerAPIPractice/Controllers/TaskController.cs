@@ -23,6 +23,7 @@ namespace TaskManagerAPIPractice.Controllers
             _dbContext = dbContext;
         }
 
+        //Отриманя всіх задач ✅
         [HttpGet]
         public async Task<ActionResult<List<TaskResponse>>> GetAll()
         {
@@ -31,6 +32,7 @@ namespace TaskManagerAPIPractice.Controllers
             return Ok(response);
         }
 
+        //Отриманя всіх задач користувача ✅
         [HttpGet("idUser")]
         public async Task<ActionResult<List<TaskResponse>>> GetByIdAutomaticTask()
         {
@@ -43,6 +45,7 @@ namespace TaskManagerAPIPractice.Controllers
             return Ok(task.Select(t => new TaskResponse(t)));
         }
 
+        //Отриманя всіх задач користувача за ідентифікатором ✅
         [HttpGet("{id}")]
         public async Task<ActionResult<TaskResponse>> GetById(Guid id)
         {
@@ -52,6 +55,7 @@ namespace TaskManagerAPIPractice.Controllers
             return Ok(new TaskResponse(task));
         }
 
+        //Створення задачі ✅
         [HttpPost]
         public async Task<ActionResult<TaskResponse>> Create([FromBody] TaskAddUpdateRequest request)
         {
@@ -84,6 +88,7 @@ namespace TaskManagerAPIPractice.Controllers
             return CreatedAtAction(nameof(GetById), new { id = taskEntity.Id }, new TaskResponse(taskEntity));
         }
 
+        //Оновлення задачі
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(Guid id, [FromBody] TaskAddUpdateRequest taskRequest)
         {
@@ -108,6 +113,7 @@ namespace TaskManagerAPIPractice.Controllers
             return Ok(id);
         }
 
+        //Оновлення статусу ✅
         [HttpPatch("{id}/status")]
         public async Task<ActionResult> UpdateStatus(Guid id, [FromBody] UpdateStatusRequest request)
         {
@@ -115,6 +121,7 @@ namespace TaskManagerAPIPractice.Controllers
             return Ok(id);
         }
 
+        //Оноплення пріоритету ✅
         [HttpPatch("{id}/priority")]
         public async Task<ActionResult> UpdatePriority(Guid id, [FromBody] UpdatePriorityRequest request)
         {
@@ -122,7 +129,7 @@ namespace TaskManagerAPIPractice.Controllers
             return Ok(id);
         }
 
-
+        //Видалення задач 
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(Guid id)
         {
@@ -130,6 +137,7 @@ namespace TaskManagerAPIPractice.Controllers
             return NoContent();
         }
 
+        //Отримання задач з фільтрацією ✅
         [HttpGet("filtered")]
         public async Task<ActionResult<List<TaskResponse>>> GetFilteredTasks(
         [FromQuery] string? search,

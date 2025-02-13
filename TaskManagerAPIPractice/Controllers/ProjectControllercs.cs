@@ -21,6 +21,7 @@ namespace TaskManagerAPIPractice.API.Controllers
             _projectsServices = projectsServices;
         }
 
+        //Отримання проектів ✅
         [HttpGet]
         public async Task<ActionResult<List<ProjectResponse>>> GetAll()
         {
@@ -28,6 +29,7 @@ namespace TaskManagerAPIPractice.API.Controllers
             return Ok(projects.Select(p => new ProjectResponse(p)));
         }
 
+        //Отримання проектів  з автоматичним підставленням користувача ✅
         [HttpGet("idUser")]
         public async Task<ActionResult<List<ProjectResponse>>> GetByIdAutomaticProject()
         {
@@ -40,6 +42,7 @@ namespace TaskManagerAPIPractice.API.Controllers
             return Ok(project.Select(p => new ProjectResponse(p)));
         }
 
+        //Отримання проктів по ідентифікатору ✅
         [HttpGet("{id}")]
         public async Task<ActionResult<ProjectResponse>> GetById(Guid id)
         {
@@ -48,6 +51,7 @@ namespace TaskManagerAPIPractice.API.Controllers
             return Ok(new ProjectResponse(project));
         }
 
+        //Створення проекту з автоматичним підставленням користувача ✅
         [HttpPost("Automatically")]
         public async Task<IActionResult> CreateAutomaticallyUser([FromBody] CreateProjectRequest request)
         {
@@ -70,25 +74,26 @@ namespace TaskManagerAPIPractice.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = project.Id }, new ProjectResponse(project));
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] ProjectRequest request)
-        {
-            var project = new ProjectEntity
-            {
-                Id = Guid.NewGuid(),
-                Title = request.Title,
-                Description = request.Description,
-                StartDate = DateTime.UtcNow,
-                EndDate = request.EndDate,
-                Status = (ProjectStatus)request.Status,
-                TeamId = request.TeamId,
-                ProjectCreatedById = request.ProjectCreatedById
-            };
+        //[HttpPost]
+        //public async Task<IActionResult> Create([FromBody] ProjectRequest request)
+        //{
+        //    var project = new ProjectEntity
+        //    {
+        //        Id = Guid.NewGuid(),
+        //        Title = request.Title,
+        //        Description = request.Description,
+        //        StartDate = DateTime.UtcNow,
+        //        EndDate = request.EndDate,
+        //        Status = (ProjectStatus)request.Status,
+        //        TeamId = request.TeamId,
+        //        ProjectCreatedById = request.ProjectCreatedById
+        //    };
 
-            await _projectsServices.Add(project);
-            return CreatedAtAction(nameof(GetById), new { id = project.Id }, new ProjectResponse(project));
-        }
+        //    await _projectsServices.Add(project);
+        //    return CreatedAtAction(nameof(GetById), new { id = project.Id }, new ProjectResponse(project));
+        //}
 
+        //Оновлення проекту ✅
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] ProjectRequest request)
         {
@@ -106,6 +111,7 @@ namespace TaskManagerAPIPractice.API.Controllers
             return NoContent();
         }
 
+        //Оовлення статусу ✅
         [HttpPatch("{id}/status")]
         public async Task<ActionResult> UpdateStatus(Guid id, [FromBody] UpdateStatusRequest request)
         {
@@ -113,6 +119,7 @@ namespace TaskManagerAPIPractice.API.Controllers
             return Ok(id);
         }
 
+        //Видалення проекту ✅
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
@@ -120,7 +127,7 @@ namespace TaskManagerAPIPractice.API.Controllers
             return NoContent();
         }
 
-        //Отримати відфільтровані проекти
+        //Отримати відфільтровані проекти✅
         [HttpGet("filtered")]
         public async Task<ActionResult<List<ProjectResponse>>> GetFiltered([FromQuery] string? search, [FromQuery] int? status, [FromQuery] string? team)
         {
