@@ -40,8 +40,6 @@ namespace TaskManagerAPIPractice.API.Controllers
             return Ok(project.Select(p => new ProjectResponse(p)));
         }
 
-
-
         [HttpGet("{id}")]
         public async Task<ActionResult<ProjectResponse>> GetById(Guid id)
         {
@@ -91,8 +89,6 @@ namespace TaskManagerAPIPractice.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = project.Id }, new ProjectResponse(project));
         }
 
-
-
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] ProjectRequest request)
         {
@@ -128,7 +124,10 @@ namespace TaskManagerAPIPractice.API.Controllers
         [HttpGet("filtered")]
         public async Task<ActionResult<List<ProjectResponse>>> GetFiltered([FromQuery] string? search, [FromQuery] int? status, [FromQuery] string? team)
         {
-            var projects = await _projectsServices.GetFilteredProject(search, status, team);
+            var userId = User.FindFirstValue("userId");
+            if (userId == null) return Unauthorized();
+
+            var projects = await _projectsServices.GetFilteredProject(Guid.Parse(userId), search, status, team);
             var response = projects.Select(project => new ProjectResponse(project)).ToList();
             return Ok(response);
         }

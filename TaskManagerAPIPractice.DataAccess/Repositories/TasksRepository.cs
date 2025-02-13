@@ -39,14 +39,6 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
                 .Include(t => t.Notifications)
                 .FirstOrDefaultAsync(t => t.Id == id) ?? throw new Exception("Task not found"); ;
         }
-
-        //// Додати нове завдання
-        //public async Task Add(TaskEntity task)
-        //{
-        //    _context.Tasks.Add(task);
-        //    await _context.SaveChangesAsync();
-        //}
-
         public async Task Add(TaskEntity task)
         {
             await _context.Tasks.AddAsync(task);
@@ -136,7 +128,7 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
         }
 
         // Отримати відфільтровані завдання
-        public async Task<List<TaskEntity>> GetFilteredTasks(string? search, int? status, int? priority, DateTime? deadline, string? project, string? tag)
+        public async Task<List<TaskEntity>> GetFilteredTasks(Guid userId, string? search, int? status, int? priority, DateTime? deadline, string? project, string? tag)
         {
             var query = _context.Tasks
                 .Include(t => t.TaskCreatedBy)
@@ -145,6 +137,8 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
                 .Include(t => t.Project)
                 .Include(t => t.Tags)
                 .Include(t => t.Notifications)
+                .Where(t => t.TaskCreatedById == userId || t.TaskAssignedToId == userId) // Додаємо фільтр по користувачу
+                .AsNoTracking()
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
@@ -165,9 +159,6 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
             if (deadline.HasValue)
             {
                 query = query.Where(t => t.DeadLine.HasValue && t.DeadLine.Value.Date == deadline.Value.Date);
-
-                //query = query.Where(t => t.DeadLine.Date == deadline.Value.Date);
-                //query = query.Where(t => t.DeadLine == deadline.Value);
             }
 
             if (!string.IsNullOrEmpty(project))

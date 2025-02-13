@@ -64,7 +64,7 @@ builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
-        policy => policy.WithOrigins("http://localhost:5174") // Дозволяє твоєму React-додатку робити запити Важливо без /
+        policy => policy.WithOrigins("http://localhost:5173") // Дозволяє твоєму React-додатку робити запити Важливо без /
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials()); // Якщо використовуєш аутентифікацію через cookies
@@ -83,15 +83,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowFrontend");
-//app.UseCors();
-
-//app.UseCors(policy =>
-//{
-//    policy.WithOrigins("http://localhost:5173")
-//          .AllowAnyHeader()
-//          .AllowAnyMethod();
-//});
-
 
 app.UseHttpsRedirection();
 

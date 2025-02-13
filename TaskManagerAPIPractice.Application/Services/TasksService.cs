@@ -28,12 +28,6 @@ namespace TaskManagerAPIPractice.Application.Services
             return await _tasksRepository.GetById(id);
         }
 
-        //// Додати нове завдання
-        //public async Task Add(TaskEntity task)
-        //{
-        //    await _tasksRepository.Add(task);
-        //}
-
         public async Task AddTaskWithNotification(TaskEntity task)
         {
             _dbContext.Tasks.Add(task);
@@ -67,28 +61,26 @@ namespace TaskManagerAPIPractice.Application.Services
             await _dbContext.SaveChangesAsync();
         }
 
-
-        //public async Task AddTaskWithNotification(TaskEntity task)
-        //{
-        //    // Створюємо повідомлення про створення завдання
-        //    var notification = new NotificationEntity
-        //    {
-        //        Id = Guid.NewGuid(),
-        //        Message = $"Завдання '{task.Title}' створено для користувача {task.TaskAssignedToId}",
-        //        CreatedAt = DateTime.UtcNow
-        //    };
-
-        //    // Додаємо його до списку повідомлень завдання
-        //    task.Notifications.Add(notification);
-
-        //    // Зберігаємо завдання в базу
-        //    await _tasksRepository.Add(task);
-        //}
-
         // Оновити завдання
         public async Task Update(TaskEntity task)
         {
             await _tasksRepository.Update(task);
+            await _dbContext.SaveChangesAsync(); // Примушуємо EF оновити `task.Id`
+
+            var notifications = new List<NotificationEntity>();
+
+            // Повідомлення для автора
+            notifications.Add(new NotificationEntity
+            {
+                Id = Guid.NewGuid(),
+                Message = $"Завдання '{task.Title}' оновлено.",
+                CreatedAt = DateTime.UtcNow,
+                UserId = task.TaskCreatedById, // Надсилаємо автору
+                TaskId = task.Id // Додаємо ідентифікатор завдання
+            });
+
+            _dbContext.Notifications.AddRange(notifications);
+            await _dbContext.SaveChangesAsync();
         }
 
         // Видалити завдання
@@ -98,9 +90,9 @@ namespace TaskManagerAPIPractice.Application.Services
         }
 
         // Отримати відфільтровані завдання
-        public async Task<List<TaskEntity>> GetFilteredTasks(string? search, int? status, int? priority, DateTime? deadline, string? project, string? tag)
+        public async Task<List<TaskEntity>> GetFilteredTasks(Guid userId, string? search, int? status, int? priority, DateTime? deadline, string? project, string? tag)
         {
-            return await _tasksRepository.GetFilteredTasks(search, status, priority, deadline, project, tag);
+            return await _tasksRepository.GetFilteredTasks(userId, search, status, priority, deadline, project, tag);
         }
 
         public async Task UpdateStatus(Guid id, TaskManagerAPIPractice.Core.Model.TaskStatus status)

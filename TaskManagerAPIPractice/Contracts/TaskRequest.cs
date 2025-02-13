@@ -74,85 +74,19 @@ namespace TaskManagerAPIPractice.Contracts
         { }
     }
 
-    public record TaskAddRequest(
+    public record TaskAddUpdateRequest(
     string Title,
     string Description,
     int Status,
     int Priority,
     DateTime? DeadLine,
-    Guid TaskCreatedById,
+    //Guid TaskCreatedById,
     Guid? TaskAssignedToId,
     Guid? CategoryId,
     Guid? ProjectId,
     List<Guid> Tags,
     Guid? TeamId
 );
-
-
-    //public record TaskRequest
-    //{
-
-    //    public TaskRequest(Guid id, string title, string description, int status, int priority, DateTime deadLine, DateTime createdAt,
-    //        Guid? taskAssignedToId = null, Guid? categoryId = null, Guid? projectId = null,
-    //        List<Guid>? tags = null, List<Guid>? notifications = null, Guid? teamId = null)
-    //    {
-    //        Id = id;
-    //        Title = title;
-    //        Description = description;
-    //        Status = status;
-    //        Priority = priority;
-    //        DeadLine = deadLine;
-    //        CreatedAt = createdAt;
-    //        TaskAssignedToId = taskAssignedToId;
-    //        CategoryId = categoryId;
-    //        ProjectId = projectId;
-    //        Tags = tags;
-    //        Notifications = notifications;
-    //        TeamId = teamId;
-    //    }
-
-    //    public Guid Id { get; init; }
-    //    public string Title { get; init; }
-    //    public string Description { get; init; }
-    //    public int Status { get; init; }
-    //    public int Priority { get; init; }
-    //    public DateTime DeadLine { get; init; }
-    //    public DateTime CreatedAt { get; init; }
-    //    public Guid TaskCreatedById { get; init; }
-    //    public Guid? TaskAssignedToId { get; init; }
-    //    public Guid? CategoryId { get; init; }
-    //    public Guid? ProjectId { get; init; }
-    //    public List<Guid>? Tags { get; init; }
-    //    public List<Guid>? Notifications { get; init; }
-    //    public Guid? TeamId { get; init; }
-    //}
-
-    public record TaskRequest
-    (
-        Guid Id,
-        string Title,
-        string Description,
-        int Status,
-        int Priority,
-        DateTime DeadLine,
-        DateTime CreatedAt,
-        Guid TaskCreatedById,
-        Guid? TaskAssignedToId,
-        Guid? CategoryId,
-        Guid? ProjectId,
-        List<Guid>? Tags,
-        List<Guid>? Notifications,
-        Guid? TeamId
-    )
-    {
-        public TaskRequest(string title, string description, int status, int priority, DateTime deadLine, Guid taskCreatedById,
-            Guid? taskAssignedToId = null, Guid? categoryId = null, Guid? projectId = null,
-            List<Guid>? tags = null, List<Guid>? notifications = null, Guid? teamId = null)
-            : this(Guid.NewGuid(), title, description, status, priority, deadLine, DateTime.UtcNow, taskCreatedById,
-                taskAssignedToId, categoryId, projectId, tags, notifications, teamId)
-        { }
-    }
-
     public record TaskResponse
     (
         Guid Id,
@@ -171,7 +105,6 @@ namespace TaskManagerAPIPractice.Contracts
         TeamDetails? Team
     )
     {
-
         public TaskResponse(TaskEntity task) : this(
             task.Id,
             task.Title,
@@ -184,9 +117,11 @@ namespace TaskManagerAPIPractice.Contracts
             task.TaskAssignedTo != null ? new UserDetails(task.TaskAssignedTo.Id, task.TaskAssignedTo.FullName) : null,
             task.Category != null ? new CategoryDetails(task.Category.Id, task.Category.Title) : null,
             task.Project != null ? new ProjectDetails(task.Project.Id, task.Project.Title) : null,
+            //task.Tags != null ? task.Tags.Select(tag => new TagDetails(tag.Id, tag.Name)).ToList() : new List<TagDetails>(),
             task.Tags != null ? task.Tags.Select(tag => new TagDetails(tag.Id, tag.Name)).ToList() : new List<TagDetails>(),
             task.Notifications != null ? task.Notifications.Select(notification => new NotificationDetails(notification.Id, notification.Message)).ToList() : new List<NotificationDetails>(),
             task.Team != null ? new TeamDetails(task.Team.Id, task.Team.Name) : null
+
         )
         { }
 

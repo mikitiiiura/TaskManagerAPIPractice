@@ -86,12 +86,15 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
         }
 
         // Отримати відфільтровані проекти
-        public async Task<List<ProjectEntity>> GetFiltered(string? search, int? status, string? team)
+        public async Task<List<ProjectEntity>> GetFiltered(Guid userId, string? search, int? status, string? team)
         {
             var query = _context.Projects
                 .Include(p => p.Team)
                 .Include(p => p.ProjectCreatedBy)
-                .AsNoTracking();
+                .Include(p => p.Tasks) //небуло
+                .Where(p => p.ProjectCreatedById == userId) // Додаємо фільтр по користувачу
+                .AsNoTracking()
+                .AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
@@ -110,7 +113,7 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
 
             return await query.ToListAsync();
             //return projectEntities.Select(p => MapToProject(p)).ToList();
-        }
+        }  
 
         public async Task UpdateStatus(Guid id, TaskManagerAPIPractice.Core.Model.ProjectStatus status)
         {
@@ -137,10 +140,6 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
                 .ToListAsync();
 
             return projectEntities;
-
-            //return await _context.Projects
-            //    .Where(p => p.ProjectCreatedById == userId)
-            //    .ToListAsync();
         }
 
     }

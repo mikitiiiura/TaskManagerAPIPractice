@@ -30,7 +30,9 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
         // Додати новий проект
         public async Task Add(ProjectEntity project)
         {
+
             await _projectsRepository.Add(project);
+
         }
 
         // Оновити проект
@@ -46,9 +48,9 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
         }
 
         // Отримати відфільтровані проекти
-        public async Task<List<ProjectEntity>> GetFilteredProject(string? search, int? status, string? team)
+        public async Task<List<ProjectEntity>> GetFilteredProject(Guid userId, string? search, int? status, string? team)
         {
-            return await _projectsRepository.GetFiltered(search, status, team);
+            return await _projectsRepository.GetFiltered(userId, search, status, team);
         }
 
         public async Task UpdateStatus(Guid id, TaskManagerAPIPractice.Core.Model.ProjectStatus status)
