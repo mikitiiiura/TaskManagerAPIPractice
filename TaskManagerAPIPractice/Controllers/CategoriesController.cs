@@ -44,6 +44,7 @@ namespace TaskManagerAPIPractice.Controllers
             };
 
             await _categoryServices.Add(category);
+            
             return CreatedAtAction(nameof(GetById), new { id = category.Id }, new CategoryResponse(category));
         }
 

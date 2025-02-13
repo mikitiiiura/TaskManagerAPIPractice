@@ -4,7 +4,7 @@ namespace TaskManagerAPIPractice.Application.Services
 {
     public interface ITasksService
     {
-        Task Add(TaskEntity task);
+        Task AddTaskWithNotification(TaskEntity task);
         Task Delete(Guid id);
         Task<List<TaskEntity>> GetAll();
         Task<TaskEntity?> GetById(Guid id);

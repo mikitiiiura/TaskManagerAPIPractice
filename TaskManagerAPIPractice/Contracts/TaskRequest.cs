@@ -1,4 +1,5 @@
-﻿using TaskManagerAPIPractice.Core.Model;
+﻿using System.Text.Json.Serialization;
+using TaskManagerAPIPractice.Core.Model;
 using TaskManagerAPIPractice.DataAccess.ModulEntity;
 
 namespace TaskManagerAPIPractice.Contracts
@@ -72,6 +73,60 @@ namespace TaskManagerAPIPractice.Contracts
             category.Tasks.Count)
         { }
     }
+
+    public record TaskAddRequest(
+    string Title,
+    string Description,
+    int Status,
+    int Priority,
+    DateTime? DeadLine,
+    Guid TaskCreatedById,
+    Guid? TaskAssignedToId,
+    Guid? CategoryId,
+    Guid? ProjectId,
+    List<Guid> Tags,
+    Guid? TeamId
+);
+
+
+    //public record TaskRequest
+    //{
+
+    //    public TaskRequest(Guid id, string title, string description, int status, int priority, DateTime deadLine, DateTime createdAt,
+    //        Guid? taskAssignedToId = null, Guid? categoryId = null, Guid? projectId = null,
+    //        List<Guid>? tags = null, List<Guid>? notifications = null, Guid? teamId = null)
+    //    {
+    //        Id = id;
+    //        Title = title;
+    //        Description = description;
+    //        Status = status;
+    //        Priority = priority;
+    //        DeadLine = deadLine;
+    //        CreatedAt = createdAt;
+    //        TaskAssignedToId = taskAssignedToId;
+    //        CategoryId = categoryId;
+    //        ProjectId = projectId;
+    //        Tags = tags;
+    //        Notifications = notifications;
+    //        TeamId = teamId;
+    //    }
+
+    //    public Guid Id { get; init; }
+    //    public string Title { get; init; }
+    //    public string Description { get; init; }
+    //    public int Status { get; init; }
+    //    public int Priority { get; init; }
+    //    public DateTime DeadLine { get; init; }
+    //    public DateTime CreatedAt { get; init; }
+    //    public Guid TaskCreatedById { get; init; }
+    //    public Guid? TaskAssignedToId { get; init; }
+    //    public Guid? CategoryId { get; init; }
+    //    public Guid? ProjectId { get; init; }
+    //    public List<Guid>? Tags { get; init; }
+    //    public List<Guid>? Notifications { get; init; }
+    //    public Guid? TeamId { get; init; }
+    //}
+
     public record TaskRequest
     (
         Guid Id,

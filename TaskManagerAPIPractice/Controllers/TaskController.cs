@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using TaskManagerAPIPractice.Application.Services;
 using TaskManagerAPIPractice.Contracts;
+using TaskManagerAPIPractice.DataAccess;
 using TaskManagerAPIPractice.DataAccess.ModulEntity;
 
 namespace TaskManagerAPIPractice.Controllers
@@ -13,10 +15,12 @@ namespace TaskManagerAPIPractice.Controllers
     public class TasksController : ControllerBase
     {
         private readonly ITasksService _tasksService;
+        private readonly TaskAPIDbContext _dbContext;
 
-        public TasksController(ITasksService tasksService)
+        public TasksController(ITasksService tasksService, TaskAPIDbContext dbContext)
         {
             _tasksService = tasksService;
+            _dbContext = dbContext;
         }
 
         [HttpGet]
@@ -49,29 +53,89 @@ namespace TaskManagerAPIPractice.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Add([FromBody] TaskRequest taskRequest)
+        public async Task<ActionResult<TaskResponse>> Create([FromBody] TaskAddRequest request)
         {
-            var task = new TaskEntity
+            var existingTags = _dbContext.Tags.Where(tag => request.Tags.Contains(tag.Id)).ToList();
+
+            var taskEntity = new TaskEntity
             {
                 Id = Guid.NewGuid(),
-                Title = taskRequest.Title,
-                Description = taskRequest.Description,
-                Status = (TaskManagerAPIPractice.Core.Model.TaskStatus)taskRequest.Status,
-                Priority = (TaskManagerAPIPractice.Core.Model.TaskPriority)taskRequest.Priority,
-                DeadLine = taskRequest.DeadLine,
+                Title = request.Title,
+                Description = request.Description,
+                Status = (TaskManagerAPIPractice.Core.Model.TaskStatus)request.Status,
+                Priority = (TaskManagerAPIPractice.Core.Model.TaskPriority)request.Priority,
+                DeadLine = request.DeadLine,
                 CreatedAt = DateTime.UtcNow,
-                TaskCreatedById = taskRequest.TaskCreatedById,
-                TaskAssignedToId = taskRequest.TaskAssignedToId,
-                CategoryId = taskRequest.CategoryId,
-                ProjectId = taskRequest.ProjectId,
-                TeamId = taskRequest.TeamId,
-                Tags = taskRequest.Tags?.Select(tagId => new TagEntity { Id = tagId }).ToList() ?? new List<TagEntity>(),
-                Notifications = taskRequest.Notifications?.Select(n => new NotificationEntity { Id = n }).ToList() ?? new List<NotificationEntity>()
+                TaskCreatedById = request.TaskCreatedById,
+                TaskAssignedToId = request.TaskAssignedToId,
+                CategoryId = request.CategoryId,
+                ProjectId = request.ProjectId,
+                TeamId = request.TeamId,
+                Tags = request.Tags?
+                    .Select(tagId => existingTags.FirstOrDefault(t => t.Id == tagId) ?? new TagEntity { Id = tagId })
+                    .ToList() ?? new List<TagEntity>()
             };
 
-            await _tasksService.Add(task);
-            return CreatedAtAction(nameof(GetById), new { id = task.Id }, new TaskResponse(task));
+            await _tasksService.AddTaskWithNotification(taskEntity);
+
+            return CreatedAtAction(nameof(GetById), new { id = taskEntity.Id }, new TaskResponse(taskEntity));
         }
+
+
+        //[HttpPost]
+        //public async Task<ActionResult<TaskResponse>> Create([FromBody] TaskAddRequest request)
+        //{
+        //    var taskEntity = new TaskEntity
+        //    {
+        //        Id = Guid.NewGuid(),
+        //        Title = request.Title,
+        //        Description = request.Description,
+        //        Status = (TaskManagerAPIPractice.Core.Model.TaskStatus)request.Status,
+        //        Priority = (TaskManagerAPIPractice.Core.Model.TaskPriority)request.Priority,
+        //        DeadLine = request.DeadLine,
+        //        CreatedAt = DateTime.UtcNow,
+        //        TaskCreatedById = request.TaskCreatedById,
+        //        TaskAssignedToId = request.TaskAssignedToId,
+        //        CategoryId = request.CategoryId,
+        //        ProjectId = request.ProjectId,
+        //        TeamId = request.TeamId,
+        //        Tags = request.Tags?.Select(tagId => _dbContext.Tags.Find(tagId) ?? new TagEntity { Id = tagId }).ToList()
+        //        ?? new List<TagEntity>(),
+        //        Notifications = new List<NotificationEntity>() // Порожній список, бо наповнюється в сервісі
+        //    };
+
+        //    await _tasksService.AddTaskWithNotification(taskEntity);
+
+        //    return CreatedAtAction(nameof(GetById), new { id = taskEntity.Id }, new TaskResponse(taskEntity));
+        //}
+
+
+
+        //[HttpPost]
+        //public async Task<ActionResult> Add([FromBody] TaskRequest taskRequest)
+        //{
+
+        //    var task = new TaskEntity
+        //    {
+        //        Id = Guid.NewGuid(),
+        //        Title = taskRequest.Title,
+        //        Description = taskRequest.Description,
+        //        Status = (TaskManagerAPIPractice.Core.Model.TaskStatus)taskRequest.Status,
+        //        Priority = (TaskManagerAPIPractice.Core.Model.TaskPriority)taskRequest.Priority,
+        //        DeadLine = taskRequest.DeadLine,
+        //        CreatedAt = DateTime.UtcNow,
+        //        TaskCreatedById = taskRequest.TaskCreatedById,
+        //        TaskAssignedToId = taskRequest.TaskAssignedToId,
+        //        CategoryId = taskRequest.CategoryId,
+        //        ProjectId = taskRequest.ProjectId,
+        //        TeamId = taskRequest.TeamId,
+        //        Tags = taskRequest.Tags?.Select(tagId => new TagEntity { Id = tagId }).ToList() ?? new List<TagEntity>(),
+        //        Notifications = taskRequest.Notifications?.Select(n => new NotificationEntity { Id = n }).ToList() ?? new List<NotificationEntity>()
+        //    };
+
+        //    await _tasksService.Add(task);
+        //    return CreatedAtAction(nameof(GetById), new { id = task.Id }, new TaskResponse(task));
+        //}
 
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(Guid id, [FromBody] TaskRequest taskRequest)

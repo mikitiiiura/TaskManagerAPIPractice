@@ -40,10 +40,16 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
                 .FirstOrDefaultAsync(t => t.Id == id) ?? throw new Exception("Task not found"); ;
         }
 
-        // Додати нове завдання
+        //// Додати нове завдання
+        //public async Task Add(TaskEntity task)
+        //{
+        //    _context.Tasks.Add(task);
+        //    await _context.SaveChangesAsync();
+        //}
+
         public async Task Add(TaskEntity task)
         {
-            _context.Tasks.Add(task);
+            await _context.Tasks.AddAsync(task);
             await _context.SaveChangesAsync();
         }
 

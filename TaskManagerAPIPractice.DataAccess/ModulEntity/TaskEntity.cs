@@ -12,8 +12,6 @@ namespace TaskManagerAPIPractice.DataAccess.ModulEntity
         public DateTime? DeadLine { get; set; }
         public DateTime CreatedAt { get; set; }// DateTime.UtcNow;
 
-        //Status, Priority, DeadLine, CreatedAt, TaskCreatedById, 
-
         // Зовнішні ключі
         public Guid TaskCreatedById { get; set; }
         public UserEntity TaskCreatedBy { get; set; } = null!; // Хто створив
