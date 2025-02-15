@@ -135,7 +135,7 @@ namespace TaskManagerAPIPractice.Contracts
     public record NotificationDetails(Guid Id, string Message);
     public record TeamDetails(Guid Id, string Name);
 
-    public record ProjectRequest(string Title, string Description, DateTime? EndDate, int Status, Guid? TeamId, Guid? ProjectCreatedById);
+    public record ProjectRequest(string Title, string Description, DateTime? EndDate, int Status, Guid? TeamId);
 
     public record CreateProjectRequest(string Title, string Description, DateTime? EndDate, int Status, Guid? TeamId);
 

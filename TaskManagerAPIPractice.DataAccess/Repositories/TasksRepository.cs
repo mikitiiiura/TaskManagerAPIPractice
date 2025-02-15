@@ -119,13 +119,32 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
         // Видалити завдання
         public async Task Delete(Guid id)
         {
-            var task = await _context.Tasks.FindAsync(id);
+            // Знаходимо завдання разом із пов’язаними повідомленнями
+            var task = await _context.Tasks
+                .Include(t => t.Notifications) // Додаємо пов’язані повідомлення
+                .FirstOrDefaultAsync(t => t.Id == id);
+
             if (task != null)
             {
+                // Видаляємо всі пов’язані повідомлення
+                _context.Notifications.RemoveRange(task.Notifications);
+
+                // Видаляємо саме завдання
                 _context.Tasks.Remove(task);
+
+                // Зберігаємо зміни в базі даних
                 await _context.SaveChangesAsync();
             }
         }
+        //public async Task Delete(Guid id)
+        //{
+        //    var task = await _context.Tasks.FindAsync(id);
+        //    if (task != null)
+        //    {
+        //        _context.Tasks.Remove(task);
+        //        await _context.SaveChangesAsync();
+        //    }
+        //}
 
         // Отримати відфільтровані завдання
         public async Task<List<TaskEntity>> GetFilteredTasks(Guid userId, string? search, int? status, int? priority, DateTime? deadline, string? project, string? tag)
@@ -217,8 +236,5 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
 
             return taskEntities;
         }
-
-
-
     }
 }

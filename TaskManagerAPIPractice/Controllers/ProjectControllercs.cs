@@ -74,29 +74,13 @@ namespace TaskManagerAPIPractice.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = project.Id }, new ProjectResponse(project));
         }
 
-        //[HttpPost]
-        //public async Task<IActionResult> Create([FromBody] ProjectRequest request)
-        //{
-        //    var project = new ProjectEntity
-        //    {
-        //        Id = Guid.NewGuid(),
-        //        Title = request.Title,
-        //        Description = request.Description,
-        //        StartDate = DateTime.UtcNow,
-        //        EndDate = request.EndDate,
-        //        Status = (ProjectStatus)request.Status,
-        //        TeamId = request.TeamId,
-        //        ProjectCreatedById = request.ProjectCreatedById
-        //    };
-
-        //    await _projectsServices.Add(project);
-        //    return CreatedAtAction(nameof(GetById), new { id = project.Id }, new ProjectResponse(project));
-        //}
-
         //Оновлення проекту ✅
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] ProjectRequest request)
         {
+            var userId = User.FindFirstValue("userId");
+            if (userId == null) return Unauthorized();
+
             var existingProject = await _projectsServices.GetById(id);
             if (existingProject == null) return NotFound();
 
@@ -105,7 +89,7 @@ namespace TaskManagerAPIPractice.API.Controllers
             existingProject.EndDate = request.EndDate;
             existingProject.Status = (ProjectStatus)request.Status;
             existingProject.TeamId = request.TeamId;
-            existingProject.ProjectCreatedById = request.ProjectCreatedById;
+            existingProject.ProjectCreatedById = Guid.Parse(userId); //request.ProjectCreatedById;
 
             await _projectsServices.Update(existingProject);
             return NoContent();
