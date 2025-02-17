@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TaskManagerAPIPractice.Contracts
+namespace TaskManagerAPIPractice.Contracts.Request
 {
     public record RegisterUserRequest
     (

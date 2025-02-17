@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.EntityFrameworkCore;
 using TaskManagerAPIPractice.DataAccess.abstruction;
 using TaskManagerAPIPractice.DataAccess.ModulEntity;
 
@@ -36,6 +37,10 @@ namespace TaskManagerAPIPractice.Application.Services
         public async Task Delete(Guid id)
         {
             await _notificationsRepository.Delete(id);
+        }
+        public async Task<List<NotificationEntity>> GetByIdUser(Guid userId)
+        {
+            return await _notificationsRepository.GetByIdUser(userId);
         }
     }
 }

@@ -2,10 +2,14 @@
 using TaskManagerAPIPractice.DataAccess.Repositories;
 using TaskManagerAPIPractice.DataAccess.ModulEntity;
 using TaskManagerAPIPractice.Core.Model;
-using TaskManagerAPIPractice.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using System.Linq;
 using System.Security.Claims;
+using TaskManagerAPIPractice.Contracts.Request;
+using TaskManagerAPIPractice.Contracts.Response;
+using TaskManagerAPIPractice.Contracts;
+using MediatR;
+using TaskManagerAPIPractice.Application.Contracts.Command;
 
 namespace TaskManagerAPIPractice.API.Controllers
 {
@@ -15,10 +19,12 @@ namespace TaskManagerAPIPractice.API.Controllers
     public class ProjectsController : ControllerBase
     {
         private readonly IProjectsServices _projectsServices;
+        private readonly IMediator _mediator;
 
-        public ProjectsController(IProjectsServices projectsServices)
+        public ProjectsController(IProjectsServices projectsServices, IMediator mediator)
         {
             _projectsServices = projectsServices;
+            _mediator = mediator;
         }
 
         //Отримання проектів ✅
@@ -36,10 +42,8 @@ namespace TaskManagerAPIPractice.API.Controllers
             var userId = User.FindFirstValue("userId");
             if (userId == null) return Unauthorized();
 
-            var project = await _projectsServices.GetAllByUser(Guid.Parse(userId));
-            if (project == null) return NotFound();
-            //return Ok(new ProjectResponse(project));
-            return Ok(project.Select(p => new ProjectResponse(p)));
+            var response = await _mediator.Send(new GetUserProjectQuery(Guid.Parse(userId)));
+            return Ok(response);
         }
 
         //Отримання проктів по ідентифікатору ✅
@@ -51,6 +55,7 @@ namespace TaskManagerAPIPractice.API.Controllers
             return Ok(new ProjectResponse(project));
         }
 
+
         //Створення проекту з автоматичним підставленням користувача ✅
         [HttpPost("Automatically")]
         public async Task<IActionResult> CreateAutomaticallyUser([FromBody] CreateProjectRequest request)
@@ -58,20 +63,18 @@ namespace TaskManagerAPIPractice.API.Controllers
             var userId = User.FindFirstValue("userId");
             if (userId == null) return Unauthorized();
 
-            var project = new ProjectEntity
-            {
-                Id = Guid.NewGuid(),
-                Title = request.Title,
-                Description = request.Description,
-                StartDate = DateTime.UtcNow,
-                EndDate = request.EndDate,
-                Status = (ProjectStatus)request.Status,
-                TeamId = request.TeamId,
-                ProjectCreatedById = Guid.Parse(userId) //request.ProjectCreatedById
-            };
+            var command = new CreateProjectCommand(
+                request.Title,
+                request.Description,
+                request.EndDate,
+                request.Status,
+                request.TeamId,
+                Guid.Parse(userId)
+            );
 
-            await _projectsServices.Add(project);
-            return CreatedAtAction(nameof(GetById), new { id = project.Id }, new ProjectResponse(project));
+            var createdProject = await _mediator.Send(command);
+
+            return CreatedAtAction(nameof(GetById), new { id = createdProject.Id }, createdProject);
         }
 
         //Оновлення проекту ✅
@@ -81,18 +84,19 @@ namespace TaskManagerAPIPractice.API.Controllers
             var userId = User.FindFirstValue("userId");
             if (userId == null) return Unauthorized();
 
-            var existingProject = await _projectsServices.GetById(id);
-            if (existingProject == null) return NotFound();
+            var command = new UpdateProjectCommand(
+                id,
+                request.Title,
+                request.Description,
+                request.EndDate,
+                request.Status,
+                request.TeamId,
+                Guid.Parse(userId)
+            );
 
-            existingProject.Title = request.Title;
-            existingProject.Description = request.Description;
-            existingProject.EndDate = request.EndDate;
-            existingProject.Status = (ProjectStatus)request.Status;
-            existingProject.TeamId = request.TeamId;
-            existingProject.ProjectCreatedById = Guid.Parse(userId); //request.ProjectCreatedById;
+            var updatedProject = await _mediator.Send(command);
 
-            await _projectsServices.Update(existingProject);
-            return NoContent();
+            return Ok(updatedProject);
         }
 
         //Оовлення статусу ✅

@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using TaskManagerAPIPractice.Application.Services;
 using TaskManagerAPIPractice.Contracts;
+using TaskManagerAPIPractice.Contracts.Request;
+using TaskManagerAPIPractice.Contracts.Response;
 using TaskManagerAPIPractice.DataAccess.ModulEntity;
 
 namespace TaskManagerAPIPractice.API.Controllers
@@ -23,6 +27,19 @@ namespace TaskManagerAPIPractice.API.Controllers
         {
             var notifications = await _notificationsService.GetAll();
             return Ok(notifications.Select(n => new NotificationResponse(n.Id, n.Message, n.IsRead, n.CreatedAt, new UserDetails(n.User.Id, n.User.FullName), n.Task != null ? new TaskDetails(n.Task.Id, n.Task.Title) : null)));
+        }
+
+
+        [HttpGet("idUser")]
+        public async Task<ActionResult<NotificationResponse>> GetNotificationByIdUser()
+        {
+            var userId = User.FindFirstValue("userId");
+            if (userId == null) return Unauthorized();
+
+            var notifications = await _notificationsService.GetByIdUser(Guid.Parse(userId));
+            if (notifications == null) return NotFound();
+            //return Ok(new NotificationResponse(notification.Id, notification.Message, notification.IsRead, notification.CreatedAt, new UserDetails(notification.User.Id, notification.User.FullName), notification.Task != null ? new TaskDetails(notification.Task.Id, notification.Task.Title) : null));
+            return Ok(notifications.Select(notification => new NotificationResponse(notification.Id, notification.Message, notification.IsRead, notification.CreatedAt, new UserDetails(notification.User.Id, notification.User.FullName), notification.Task != null ? new TaskDetails(notification.Task.Id, notification.Task.Title) : null)));
         }
 
         [HttpGet("{id}")]

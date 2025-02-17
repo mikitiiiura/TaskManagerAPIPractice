@@ -25,7 +25,7 @@ namespace TaskManagerAPIPractice.DataAccess.ModulEntity
         public Guid? ProjectId { get; set; } // Проект, до якого належить завдання
         public ProjectEntity? Project { get; set; } // Проект, до якого належить завдання
 
-        public List<TagEntity> Tags { get; set; } = [];// Теги завдання
+        public List<TagEntity> Tags { get; set; } = [];// Теги завдання   //додав ?
 
         public List<NotificationEntity> Notifications { get; set; } = []; // Список повідомлень
 

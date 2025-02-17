@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using TaskManagerAPIPractice.Application.Services;
 using TaskManagerAPIPractice.Contracts;
+using TaskManagerAPIPractice.Contracts.Request;
+using TaskManagerAPIPractice.Contracts.Response;
 using TaskManagerAPIPractice.DataAccess.ModulEntity;
 
 namespace TaskManagerAPIPractice.Controllers
@@ -22,15 +25,9 @@ namespace TaskManagerAPIPractice.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterUserRequest userRequest)
         {
-            //try
-            //{
+
             await _userService.Register(userRequest.UserName, userRequest.Email, userRequest.Password);
             return Ok("User registered successfully");
-            // }
-            //catch (Exception ex)
-            //{
-            //return BadRequest(new { message = ex.Message });
-            // }
         }
 
         [HttpPost("login")]
@@ -57,22 +54,25 @@ namespace TaskManagerAPIPractice.Controllers
             });
         }
 
-
-        // Отримати всіх користувачів
-        [HttpGet]
-        [Authorize]
-        public async Task<ActionResult<List<UserResponse>>> GetAllUsers()
-        {
-            var users = await _userService.GetAllUsers();
-            return Ok(users.Select(MapToUserResponse).ToList());
-        }
-
         // Отримати користувача по ID
         [HttpGet("{id:guid}")]
         [Authorize]
         public async Task<ActionResult<UserResponse>> GetUserById(Guid id)
         {
             var user = await _userService.GetUserById(id);
+            if (user == null) return NotFound("User not found.");
+            return Ok(MapToUserResponse(user));
+        }
+
+        // Отримати користувача по ID
+        [HttpGet("Authomatic")]
+        [Authorize]
+        public async Task<ActionResult<UserResponse>> GetUserByIdAuthomatic()
+        {
+            var userId = User.FindFirstValue("userId");
+            if (userId == null) return Unauthorized();
+
+            var user = await _userService.GetUserById(Guid.Parse(userId));
             if (user == null) return NotFound("User not found.");
             return Ok(MapToUserResponse(user));
         }

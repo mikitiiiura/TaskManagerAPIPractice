@@ -43,6 +43,21 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
         {
             await _context.Tasks.AddAsync(task);
             await _context.SaveChangesAsync();
+
+            var notifications = new List<NotificationEntity>();
+
+            // Повідомлення для автора
+            notifications.Add(new NotificationEntity
+            {
+                Id = Guid.NewGuid(),
+                Message = $"Task '{task.Title}' created.",
+                CreatedAt = DateTime.UtcNow,
+                UserId = task.TaskCreatedById, // Надсилаємо автору
+                TaskId = task.Id // Додаємо ідентифікатор завдання
+            });
+
+            _context.Notifications.AddRange(notifications);
+            await _context.SaveChangesAsync();
         }
 
         // Оновити завдання
@@ -78,6 +93,21 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
             existingTask.Notifications = task.Notifications;
 
             _context.Tasks.Update(existingTask);
+            await _context.SaveChangesAsync();
+
+            var notifications = new List<NotificationEntity>();
+
+            // Повідомлення для автора
+            notifications.Add(new NotificationEntity
+            {
+                Id = Guid.NewGuid(),
+                Message = $"Task '{task.Title}' updated.",
+                CreatedAt = DateTime.UtcNow,
+                UserId = task.TaskCreatedById, // Надсилаємо автору
+                TaskId = task.Id // Додаємо ідентифікатор завдання
+            });
+
+            _context.Notifications.AddRange(notifications);
             await _context.SaveChangesAsync();
         }
 
@@ -116,7 +146,40 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
             await _context.SaveChangesAsync();
         }
 
-        // Видалити завдання
+        //public async Task Delete(Guid id)
+        //{
+        //    var task = await _context.Tasks
+        //        .Include(t => t.Notifications) // Додаємо пов’язані повідомлення
+        //        .FirstOrDefaultAsync(t => t.Id == id);
+
+        //    if (task != null)
+        //    {
+        //        var notifications = new List<NotificationEntity>
+        //{
+        //    new NotificationEntity
+        //    {
+        //        Id = Guid.NewGuid(),
+        //        Message = $"Task '{task.Title}' was deleted.",
+        //        CreatedAt = DateTime.UtcNow,
+        //        UserId = task.TaskCreatedById,
+        //        TaskId = task.Id // Додаємо ідентифікатор завдання
+        //    }
+        //};
+
+        //        // Додаємо повідомлення перед видаленням завдання
+        //        await _context.Notifications.AddRangeAsync(notifications);
+
+        //        // Видаляємо пов’язані повідомлення
+        //        _context.Notifications.RemoveRange(task.Notifications);
+
+        //        // Видаляємо саме завдання
+        //        _context.Tasks.Remove(task);
+
+        //        // Зберігаємо зміни ОДИН РАЗ
+        //        await _context.SaveChangesAsync();
+        //    }
+        //}
+
         public async Task Delete(Guid id)
         {
             // Знаходимо завдання разом із пов’язаними повідомленнями
@@ -126,6 +189,21 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
 
             if (task != null)
             {
+                // Створюємо нове повідомлення для автора завдання
+                var notification = new NotificationEntity
+                {
+                    Id = Guid.NewGuid(),
+                    Message = $"Task '{task.Title}' deleted.", // Повідомлення про видалення
+                    CreatedAt = DateTime.UtcNow,
+                    UserId = task.TaskCreatedById, // Надсилаємо автору
+                };
+
+                // Додаємо повідомлення до контексту
+                _context.Notifications.Add(notification);
+
+                // Зберігаємо повідомлення в базі даних
+                await _context.SaveChangesAsync();
+
                 // Видаляємо всі пов’язані повідомлення
                 _context.Notifications.RemoveRange(task.Notifications);
 
@@ -134,6 +212,45 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
 
                 // Зберігаємо зміни в базі даних
                 await _context.SaveChangesAsync();
+            }
+        }
+
+
+        // Видалити завдання
+        public async Task Delete2222(Guid id)
+        {
+            // Знаходимо завдання разом із пов’язаними повідомленнями
+            var task = await _context.Tasks
+                .Include(t => t.Notifications) // Додаємо пов’язані повідомлення
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (task != null)
+            {
+                var notifications = new List<NotificationEntity>();
+
+                // Повідомлення для автора
+                notifications.Add(new NotificationEntity
+                {
+                    Id = Guid.NewGuid(),
+                    Message = $"Task '{task.Title}' updated.",
+                    CreatedAt = DateTime.UtcNow,
+                    UserId = task.TaskCreatedById, // Надсилаємо автору
+                    //TaskId = Guid.Empty // Додаємо ідентифікатор завдання
+                });
+
+                _context.Notifications.AddRange(notifications);
+                await _context.SaveChangesAsync();
+
+                // Видаляємо всі пов’язані повідомлення
+                _context.Notifications.RemoveRange(task.Notifications);
+
+                // Видаляємо саме завдання
+                _context.Tasks.Remove(task);
+
+                // Зберігаємо зміни в базі даних
+                await _context.SaveChangesAsync();
+
+                
             }
         }
         //public async Task Delete(Guid id)

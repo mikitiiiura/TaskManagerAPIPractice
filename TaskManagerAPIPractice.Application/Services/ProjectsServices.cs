@@ -30,9 +30,7 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
         // Додати новий проект
         public async Task Add(ProjectEntity project)
         {
-
             await _projectsRepository.Add(project);
-
         }
 
         // Оновити проект

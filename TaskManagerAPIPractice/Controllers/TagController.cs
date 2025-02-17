@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TaskManagerAPIPractice.Application.Services;
 using TaskManagerAPIPractice.Contracts;
+using TaskManagerAPIPractice.Contracts.Request;
+using TaskManagerAPIPractice.Contracts.Response;
 using TaskManagerAPIPractice.DataAccess.ModulEntity;
 
 namespace TaskManagerAPIPractice.Controllers

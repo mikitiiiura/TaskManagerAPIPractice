@@ -1,9 +1,15 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure.Core;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using TaskManagerAPIPractice.Application.Contracts.Command;
+using TaskManagerAPIPractice.Application.Handlers;
 using TaskManagerAPIPractice.Application.Services;
 using TaskManagerAPIPractice.Contracts;
+using TaskManagerAPIPractice.Contracts.Request;
+using TaskManagerAPIPractice.Contracts.Response;
 using TaskManagerAPIPractice.DataAccess;
 using TaskManagerAPIPractice.DataAccess.ModulEntity;
 
@@ -16,21 +22,23 @@ namespace TaskManagerAPIPractice.Controllers
     {
         private readonly ITasksService _tasksService;
         private readonly TaskAPIDbContext _dbContext;
+        private readonly IMediator _mediator;
 
-        public TasksController(ITasksService tasksService, TaskAPIDbContext dbContext)
+        public TasksController(ITasksService tasksService, TaskAPIDbContext dbContext, IMediator mediator)
         {
             _tasksService = tasksService;
             _dbContext = dbContext;
+            _mediator = mediator;
         }
 
-        //Отриманя всіх задач ✅
-        [HttpGet]
-        public async Task<ActionResult<List<TaskResponse>>> GetAll()
-        {
-            var tasks = await _tasksService.GetAll();
-            var response = tasks.Select(task => new TaskResponse(task)).ToList();
-            return Ok(response);
-        }
+        ////Отриманя всіх задач ✅
+        //[HttpGet]
+        //public async Task<ActionResult<List<TaskResponse>>> GetAll()
+        //{
+        //    var tasks = await _tasksService.GetAll();
+        //    var response = tasks.Select(task => new TaskResponse(task)).ToList();
+        //    return Ok(response);
+        //}
 
         //Отриманя всіх задач користувача ✅
         [HttpGet("idUser")]
@@ -39,10 +47,13 @@ namespace TaskManagerAPIPractice.Controllers
             var userId = User.FindFirstValue("userId");
             if (userId == null) return Unauthorized();
 
-            var task = await _tasksService.GetAllByUser(Guid.Parse(userId));
-            if (task == null) return NotFound();
-            //return Ok(new ProjectResponse(project));
-            return Ok(task.Select(t => new TaskResponse(t)));
+            //var task = await _tasksService.GetAllByUser(Guid.Parse(userId));
+            //if (task == null) return NotFound();
+            ////return Ok(new ProjectResponse(project));
+            //return Ok(task.Select(t => new TaskResponse(t)));
+
+            var response = await _mediator.Send(new GetUserTasksQuery(Guid.Parse(userId)));
+            return Ok(response);
         }
 
         //Отриманя всіх задач користувача за ідентифікатором ✅
@@ -64,33 +75,84 @@ namespace TaskManagerAPIPractice.Controllers
 
             var existingTags = _dbContext.Tags.Where(tag => request.Tags.Contains(tag.Id)).ToList();
 
-            var taskEntity = new TaskEntity
-            {
-                Id = Guid.NewGuid(),
-                Title = request.Title,
-                Description = request.Description,
-                Status = (TaskManagerAPIPractice.Core.Model.TaskStatus)request.Status,
-                Priority = (TaskManagerAPIPractice.Core.Model.TaskPriority)request.Priority,
-                DeadLine = request.DeadLine,
-                CreatedAt = DateTime.UtcNow,
-                TaskCreatedById = Guid.Parse(userId),
-                TaskAssignedToId = request.TaskAssignedToId,
-                CategoryId = request.CategoryId,
-                ProjectId = request.ProjectId,
-                TeamId = request.TeamId,
-                Tags = request.Tags?
-                    .Select(tagId => existingTags.FirstOrDefault(t => t.Id == tagId) ?? new TagEntity { Id = tagId })
-                    .ToList() ?? new List<TagEntity>()
-            };
+            var command = new CreateTaskCommand(
+                request.Title,
+                request.Description,
+                request.Status,
+                request.Priority,
+                request.DeadLine,
+                request.TaskAssignedToId,
+                request.CategoryId,
+                request.ProjectId,
+                request.Tags,
+                request.TeamId,
+                Guid.Parse(userId)
+            );
 
-            await _tasksService.AddTaskWithNotification(taskEntity);
+            var createdTask = await _mediator.Send(command);
 
-            return CreatedAtAction(nameof(GetById), new { id = taskEntity.Id }, new TaskResponse(taskEntity));
+            return CreatedAtAction(nameof(GetById), new { id = createdTask.Id }, createdTask);
         }
+
+        ////Створення задачі ✅
+        //[HttpPost("Hundret")]
+        //public async Task<ActionResult<TaskResponse>> Create2([FromBody] TaskAddUpdateRequest request)
+        //{
+        //    var userId = User.FindFirstValue("userId");
+        //    if (userId == null) return Unauthorized();
+
+        //    var existingTags = _dbContext.Tags.Where(tag => request.Tags.Contains(tag.Id)).ToList();
+
+        //    var taskEntity = new TaskEntity
+        //    {
+        //        Id = Guid.NewGuid(),
+        //        Title = request.Title,
+        //        Description = request.Description,
+        //        Status = (TaskManagerAPIPractice.Core.Model.TaskStatus)request.Status,
+        //        Priority = (TaskManagerAPIPractice.Core.Model.TaskPriority)request.Priority,
+        //        DeadLine = request.DeadLine,
+        //        CreatedAt = DateTime.UtcNow,
+        //        TaskCreatedById = Guid.Parse(userId),
+        //        TaskAssignedToId = request.TaskAssignedToId,
+        //        CategoryId = request.CategoryId,
+        //        ProjectId = request.ProjectId,
+        //        TeamId = request.TeamId,
+        //        Tags = request.Tags?
+        //            .Select(tagId => existingTags.FirstOrDefault(t => t.Id == tagId) ?? new TagEntity { Id = tagId })
+        //            .ToList() ?? new List<TagEntity>()
+        //    };
+
+        //    await _tasksService.AddTaskWithNotification(taskEntity);
+
+        //    return CreatedAtAction(nameof(GetById), new { id = taskEntity.Id }, new TaskResponse(taskEntity));
+        //}
 
         //Оновлення задачі
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(Guid id, [FromBody] TaskAddUpdateRequest taskRequest)
+        public async Task<ActionResult> Update(Guid id, [FromBody] TaskAddUpdateRequest request)
+        {
+            var command = new UpdateTaskCommand(
+                id,
+                request.Title,
+                request.Description,
+                request.Status,
+                request.Priority,
+                request.DeadLine,
+                request.TaskAssignedToId,
+                request.CategoryId,
+                request.ProjectId,
+                request.Tags,
+                request.TeamId
+            );
+
+            var updatedTask = await _mediator.Send(command);
+
+            return Ok(updatedTask);
+        }
+
+        //Оновлення задачі
+        [HttpPut("{id}Hundret")]
+        public async Task<ActionResult> Update2(Guid id, [FromBody] TaskAddUpdateRequest taskRequest)
         {
             var existingTask = await _tasksService.GetById(id);
             if (existingTask == null)

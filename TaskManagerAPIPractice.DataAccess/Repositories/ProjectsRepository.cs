@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 using TaskManagerAPIPractice.DataAccess.abstruction;
 using TaskManagerAPIPractice.DataAccess.ModulEntity;
 
@@ -23,7 +24,6 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
                 .AsNoTracking()
                 .ToListAsync();
 
-            //return projectEntities.Select(p => MapToProject(p)).ToList();
             return projectEntities.ToList();
         }
 
@@ -43,6 +43,20 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
         public async Task Add(ProjectEntity project)
         {
             await _context.Projects.AddAsync(project);
+            await _context.SaveChangesAsync();
+
+            var notifications = new List<NotificationEntity>();
+
+            // Повідомлення для автора
+            notifications.Add(new NotificationEntity
+            {
+                Id = Guid.NewGuid(),
+                Message = $"Project '{project.Title}' created.",
+                CreatedAt = DateTime.UtcNow,
+                UserId = project.ProjectCreatedById ?? throw new InvalidOperationException("ProjectCreatedById cannot be null."), // Надсилаємо автору
+            });
+
+            _context.Notifications.AddRange(notifications);
             await _context.SaveChangesAsync();
         }
 
@@ -72,6 +86,20 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
 
             _context.Projects.Update(existingProject);
             await _context.SaveChangesAsync();
+
+            var notifications = new List<NotificationEntity>();
+
+            // Повідомлення для автора
+            notifications.Add(new NotificationEntity
+            {
+                Id = Guid.NewGuid(),
+                Message = $"Project '{project.Title}' updated.",
+                CreatedAt = DateTime.UtcNow,
+                UserId = project.ProjectCreatedById ?? throw new InvalidOperationException("ProjectCreatedById cannot be null."), // Надсилаємо автору
+            });
+
+            _context.Notifications.AddRange(notifications);
+            await _context.SaveChangesAsync();
         }
 
         // Видалити проект
@@ -81,6 +109,21 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
             if (project != null)
             {
                 _context.Projects.Remove(project);
+                await _context.SaveChangesAsync();
+
+                var notifications = new List<NotificationEntity>();
+
+                // Повідомлення для автора
+                notifications.Add(new NotificationEntity
+                {
+                    Id = Guid.NewGuid(),
+                    Message = $"Project '{project.Title}' deleted.",
+                    CreatedAt = DateTime.UtcNow,
+                    UserId = project.ProjectCreatedById ?? throw new InvalidOperationException("ProjectCreatedById cannot be null."), // Надсилаємо автору
+                    //TaskId = project.Id // Додаємо ідентифікатор завдання
+                });
+
+                _context.Notifications.AddRange(notifications);
                 await _context.SaveChangesAsync();
             }
         }
@@ -141,6 +184,5 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
 
             return projectEntities;
         }
-
     }
 }

@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System.Reflection;
 using System.Text.Json.Serialization;
+using TaskManagerAPIPractice.Application.Handlers.TasksHandler;
 using TaskManagerAPIPractice.Application.Services;
 using TaskManagerAPIPractice.DataAccess;
 using TaskManagerAPIPractice.DataAccess.abstruct;
@@ -23,6 +25,9 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Додаємо MediatR
+//builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly(Program)));
 
 builder.Services.AddDbContext<TaskAPIDbContext>(
     options =>
@@ -69,6 +74,12 @@ builder.Services.AddCors(options =>
                         .AllowAnyMethod()
                         .AllowCredentials()); // Якщо використовуєш аутентифікацію через cookies
 });
+
+//builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
+//builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(GetAllTasksHandler).Assembly));
+
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<GetAllTasksHandler>());
+
 
 builder.Services.AddControllers();
 

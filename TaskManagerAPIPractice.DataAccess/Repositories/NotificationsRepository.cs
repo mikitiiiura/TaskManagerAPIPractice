@@ -22,7 +22,21 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
 
         public async Task<NotificationEntity?> GetById(Guid id)
         {
-            return await _context.Notifications.Include(n => n.User).Include(n => n.Task).AsNoTracking().FirstOrDefaultAsync(n => n.Id == id);
+            return await _context.Notifications
+                .Include(n => n.User)
+                .Include(n => n.Task)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(n => n.Id == id);
+        }
+
+        public async Task<List<NotificationEntity>> GetByIdUser(Guid userId)
+        {
+            return await _context.Notifications
+                .Where(n => n.UserId == userId)
+                .Include(n => n.User)
+                .Include(n => n.Task)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task Add(NotificationEntity notification)

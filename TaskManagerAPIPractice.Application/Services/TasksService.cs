@@ -53,7 +53,8 @@ namespace TaskManagerAPIPractice.Application.Services
                     Id = Guid.NewGuid(),
                     Message = $"Вам призначено нове завдання: '{task.Title}'.",
                     CreatedAt = DateTime.UtcNow,
-                    UserId = task.TaskAssignedToId.Value // Надсилаємо виконавцю
+                    UserId = task.TaskAssignedToId.Value, // Надсилаємо виконавцю
+                    TaskId = task.Id // Додаємо ідентифікатор завдання
                 });
             }
 
@@ -66,21 +67,6 @@ namespace TaskManagerAPIPractice.Application.Services
         {
             await _tasksRepository.Update(task);
             await _dbContext.SaveChangesAsync(); // Примушуємо EF оновити `task.Id`
-
-            var notifications = new List<NotificationEntity>();
-
-            // Повідомлення для автора
-            notifications.Add(new NotificationEntity
-            {
-                Id = Guid.NewGuid(),
-                Message = $"Завдання '{task.Title}' оновлено.",
-                CreatedAt = DateTime.UtcNow,
-                UserId = task.TaskCreatedById, // Надсилаємо автору
-                TaskId = task.Id // Додаємо ідентифікатор завдання
-            });
-
-            _dbContext.Notifications.AddRange(notifications);
-            await _dbContext.SaveChangesAsync();
         }
 
         // Видалити завдання
