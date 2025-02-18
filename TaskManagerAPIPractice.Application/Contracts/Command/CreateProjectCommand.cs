@@ -10,6 +10,11 @@ namespace TaskManagerAPIPractice.Application.Contracts.Command
 {
     public record CreateProjectCommand
     (
-        string Title, string Description, DateTime? EndDate, int Status, Guid? TeamId, Guid projectCreatedById
+        string Title, 
+        string Description, 
+        DateTime? EndDate, 
+        int Status, 
+        Guid? TeamId, 
+        Guid projectCreatedById
     ) : IRequest<ProjectResponse>;
 }

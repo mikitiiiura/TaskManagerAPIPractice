@@ -10,9 +10,9 @@ namespace TaskManagerAPIPractice.Application.Services
     {
         private readonly ITasksRepository _tasksRepository;
         private readonly TaskAPIDbContext _dbContext;
-        private readonly ILogger _logger;
+        private readonly ILogger<TasksService> _logger;
 
-        public TasksService(ITasksRepository tasksRepository, TaskAPIDbContext dbContext, ILogger logger)
+        public TasksService(ITasksRepository tasksRepository, TaskAPIDbContext dbContext, ILogger<TasksService> logger)
         {
             _tasksRepository = tasksRepository;
             _dbContext = dbContext;
