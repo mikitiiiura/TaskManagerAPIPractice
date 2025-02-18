@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Serilog;
+using Serilog.Events;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using TaskManagerAPIPractice.Application.Handlers.TasksHandler;
@@ -11,23 +13,33 @@ using TaskManagerAPIPractice.DataAccess.Repositories;
 using TaskManagerAPIPractice.Extensions;
 using TaskManagerAPIPractice.Persistence;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-//builder.Services.AddControllers()
-//    .AddJsonOptions(options =>
-//    {
-//        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
-//    });
+
+//// Налаштування Serilog
+//Log.Logger = new LoggerConfiguration()
+//    .WriteTo.Console()
+//    //.MinimumLevel.Information() // Встановіть мінімальний рівень логування
+//    .MinimumLevel.Error()
+//    .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day) // Логи в файл
+//    .CreateLogger();
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information() // Записувати лише логи рівня Information і вище
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning) // Приховати логи ASP.NET Core нижче рівня Warning
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning) // Приховати логи EF Core нижче рівня Warning
+    .WriteTo.Console()
+    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day, outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .CreateLogger();
+
+builder.Host.UseSerilog(); // Підключення Serilog
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-// Додаємо MediatR
-//builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly(Program)));
 
 builder.Services.AddDbContext<TaskAPIDbContext>(
     options =>
@@ -56,15 +68,6 @@ builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<IJwtProvider, JwtProvider>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 
-//builder.Services.AddCors(options =>
-//{
-//    options.AddDefaultPolicy(policy =>
-//    {
-//        policy.WithOrigins("http://localhost:5173/");
-//        policy.AllowAnyHeader();
-//        policy.AllowAnyMethod();
-//    });
-//});
 
 builder.Services.AddCors(options =>
 {
@@ -74,9 +77,6 @@ builder.Services.AddCors(options =>
                         .AllowAnyMethod()
                         .AllowCredentials()); // Якщо використовуєш аутентифікацію через cookies
 });
-
-//builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
-//builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(GetAllTasksHandler).Assembly));
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<GetAllTasksHandler>());
 

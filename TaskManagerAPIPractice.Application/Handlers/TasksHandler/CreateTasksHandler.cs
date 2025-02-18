@@ -1,6 +1,6 @@
-﻿
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using TaskManagerAPIPractice.Application.Contracts.Command;
 using TaskManagerAPIPractice.Application.Services;
 using TaskManagerAPIPractice.Contracts;
@@ -17,18 +17,18 @@ namespace TaskManagerAPIPractice.Application.Handlers.TasksHandler
     {
         private readonly ITasksRepository _tasksRepository;
         private readonly TaskAPIDbContext _dbContext;
+        private readonly ILogger<CreateTasksHandler> _logger;
 
-
-        public CreateTasksHandler(ITasksRepository tasksRepository, TaskAPIDbContext dbContext)
+        public CreateTasksHandler(ITasksRepository tasksRepository, TaskAPIDbContext dbContext, ILogger<CreateTasksHandler> logger)
         {
             _tasksRepository = tasksRepository;
             _dbContext = dbContext;
+            _logger = logger;
         }
 
         public async Task<TaskResponse> Handle(CreateTaskCommand request, CancellationToken cancellationToken)
         {
-            //var tasks = await _tasksRepository.GetAllByUser(request.UserId);
-            //return tasks.Select(task => new TaskResponse(task)).ToList();
+            _logger.LogInformation("Creating task: {Title}", request.Title);
             var existingTags = _dbContext.Tags.Where(tag => request.Tags.Contains(tag.Id)).ToList();
 
             var taskEntity = new TaskEntity
@@ -39,8 +39,6 @@ namespace TaskManagerAPIPractice.Application.Handlers.TasksHandler
                 Status = (Core.Model.TaskStatus)request.Status,
                 Priority = (TaskPriority)request.Priority,
                 DeadLine = request.DeadLine,
-                CreatedAt = DateTime.UtcNow,
-                //TaskCreatedById = Guid.Parse(userId),
                 TaskCreatedById = request.TaskCreatedById,
                 TaskAssignedToId = request.TaskAssignedToId,
                 CategoryId = request.CategoryId,
@@ -52,15 +50,16 @@ namespace TaskManagerAPIPractice.Application.Handlers.TasksHandler
             };
 
             await _tasksRepository.Add(taskEntity);
-            await _dbContext.SaveChangesAsync(); // Примушуємо EF оновити `task.Id`
+            await _dbContext.SaveChangesAsync();
 
-            // Додаємо сповіщення після створення задачі
+            _logger.LogInformation("Task created with ID: {TaskId}", taskEntity.Id);
+
             var notifications = new List<NotificationEntity>
             {
                 new NotificationEntity
                 {
                     Id = Guid.NewGuid(),
-                    Message = $"Завдання '{taskEntity.Title}' створено.",
+                    Message = $"Task '{taskEntity.Title}' created.",
                     CreatedAt = DateTime.UtcNow,
                     UserId = taskEntity.TaskCreatedById,
                     TaskId = taskEntity.Id
@@ -72,7 +71,7 @@ namespace TaskManagerAPIPractice.Application.Handlers.TasksHandler
                 notifications.Add(new NotificationEntity
                 {
                     Id = Guid.NewGuid(),
-                    Message = $"Вам призначено нове завдання: '{taskEntity.Title}'.",
+                    Message = $"You are assigned a new task: '{taskEntity.Title}'.",
                     CreatedAt = DateTime.UtcNow,
                     UserId = taskEntity.TaskAssignedToId.Value,
                     TaskId = taskEntity.Id
@@ -80,6 +79,7 @@ namespace TaskManagerAPIPractice.Application.Handlers.TasksHandler
             }
 
             await _dbContext.Notifications.AddRangeAsync(notifications);
+            _logger.LogInformation("Notifications created for task: {TaskId}", taskEntity.Id);
 
             return new TaskResponse(taskEntity);
         }

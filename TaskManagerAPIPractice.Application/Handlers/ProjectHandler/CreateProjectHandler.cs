@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using TaskManagerAPIPractice.Application.Contracts.Command;
 using TaskManagerAPIPractice.Contracts.Response;
 using TaskManagerAPIPractice.Core.Model;
@@ -12,15 +13,19 @@ namespace TaskManagerAPIPractice.Application.Handlers.ProjectHandler
     {
         private readonly IProjectsRepository _projectsRepository;
         private readonly TaskAPIDbContext _dbContext;
+        private readonly ILogger<CreateProjectHandler> _logger;
 
-        public CreateProjectHandler(IProjectsRepository projectsRepository, TaskAPIDbContext dbContext)
+        public CreateProjectHandler(IProjectsRepository projectsRepository, TaskAPIDbContext dbContext, ILogger<CreateProjectHandler> logger)
         {
             _projectsRepository = projectsRepository;
             _dbContext = dbContext;
+            _logger = logger;
         }
 
         public async Task<ProjectResponse> Handle(CreateProjectCommand request, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Starting project creation: {ProjectTitle}", request.Title);
+
             var project = new ProjectEntity
             {
                 Id = Guid.NewGuid(),
@@ -34,9 +39,12 @@ namespace TaskManagerAPIPractice.Application.Handlers.ProjectHandler
             };
 
             await _projectsRepository.Add(project);
-            await _dbContext.SaveChangesAsync();
+            _logger.LogInformation("Project {ProjectTitle} (ID: {ProjectId}) created successfully.", project.Title, project.Id);
 
-            // Додаємо сповіщення після створення задачі
+            await _dbContext.SaveChangesAsync();
+            _logger.LogInformation("Project {ProjectTitle} saved to database.", project.Title);
+
+            // Додаємо сповіщення після створення проєкту
             var notifications = new List<NotificationEntity>
             {
                 new NotificationEntity
@@ -50,6 +58,7 @@ namespace TaskManagerAPIPractice.Application.Handlers.ProjectHandler
             };
 
             await _dbContext.Notifications.AddRangeAsync(notifications);
+            _logger.LogInformation("Notification for project {ProjectTitle} created.", project.Title);
 
             return new ProjectResponse(project);
         }

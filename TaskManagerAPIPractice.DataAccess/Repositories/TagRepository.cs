@@ -10,7 +10,7 @@ namespace TaskManagerAPIPractice.DataAccess.Repositories
         public TagRepository(TaskAPIDbContext context) => _context = context;
 
         public async Task<List<TagEntity>> GetAllAsync() => await _context.Tags.Include(t => t.TagCreatedBy).Include(t => t.Tasks).ToListAsync();
-        public async Task<TagEntity?> GetByIdAsync(Guid id) => await _context.Tags.Include(t => t.TagCreatedBy).FirstOrDefaultAsync(t => t.Id == id);
+        public async Task<TagEntity?> GetByIdAsync(Guid id) => await _context.Tags.Include(t => t.TagCreatedBy).Include(t => t.Tasks).FirstOrDefaultAsync(t => t.TagCreatedById == id);
         public async Task AddAsync(TagEntity tag) { _context.Tags.Add(tag); await _context.SaveChangesAsync(); }
         public async Task UpdateAsync(TagEntity tag) { _context.Tags.Update(tag); await _context.SaveChangesAsync(); }
 

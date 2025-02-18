@@ -1,0 +1,8 @@
+﻿
+namespace TaskManagerAPIPractice.DataAccess
+{
+    public interface IEmailService
+    {
+        Task SendEmailAsync(string to, string subject, string body);
+    }
+}
