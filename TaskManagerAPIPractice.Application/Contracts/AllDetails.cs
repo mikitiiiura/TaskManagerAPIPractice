@@ -6,6 +6,7 @@ using TaskManagerAPIPractice.DataAccess.ModulEntity;
 namespace TaskManagerAPIPractice.Contracts
 {
     public record GetUserTasksQuery(Guid UserId) : IRequest<List<TaskResponse>>;
+    public record GetUserTeamsQuery(Guid UserId) : IRequest<List<TeamResponse>>;
     public record GetUserProjectQuery(Guid UserId) : IRequest<List<ProjectResponse>>;
     public record TaskDetails(Guid Id, string Title);
     public record UserDetails(Guid Id, string Name);

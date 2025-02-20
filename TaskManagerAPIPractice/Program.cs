@@ -56,6 +56,8 @@ builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 builder.Services.AddScoped<ITasksRepository, TasksRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ITagRepository, TagRepository>();
+builder.Services.AddScoped<ITeamRepository, TeamRepository>();
+
 
 
 builder.Services.AddScoped<IUserService, UserService>();

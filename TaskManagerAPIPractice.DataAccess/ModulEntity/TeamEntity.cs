@@ -6,7 +6,7 @@
         public string Name { get; set; } = string.Empty;
 
 
-        public Guid AdminId { get; set; } // Адміністратор команди
+        public Guid? AdminId { get; set; } // Адміністратор команди
         public UserEntity? Admin { get; set; } // Адміністратор команди
 
         public List<UserEntity> Users { get; set; } = []; // Учасники команди

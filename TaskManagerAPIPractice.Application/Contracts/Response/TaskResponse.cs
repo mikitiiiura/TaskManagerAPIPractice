@@ -1,4 +1,5 @@
-﻿using TaskManagerAPIPractice.DataAccess.ModulEntity;
+﻿using System.Threading.Tasks;
+using TaskManagerAPIPractice.DataAccess.ModulEntity;
 
 namespace TaskManagerAPIPractice.Contracts.Response
 {
@@ -39,6 +40,5 @@ namespace TaskManagerAPIPractice.Contracts.Response
 
         )
         { }
-
     }
 }
